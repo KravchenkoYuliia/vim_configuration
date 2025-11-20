@@ -1,0 +1,135 @@
+"1. autosave without :w (after exiting or changing the file with `gt`/`gT`)
+autocmd BufLeave,InsertLeave * silent! write
+"2. direct insert mode with opening a file
+autocmd BufReadPost * startinsert
+
+"3. autocomplete
+inoremap ( ()<Esc>i
+inoremap [ []<Esc>i
+inoremap { {}<Esc>i
+inoremap " ""<Esc>i
+inoremap ` ``<Esc>i
+inoremap #in #include <Esc>i
+inoremap #if #ifndef <Esc>i
+
+"4. highlight all the file with Ctrl+A
+nnoremap <C-a> ggVG
+
+"5. quit Vim with only one button `q`
+nnoremap q :wqa<CR>
+
+
+"6. show whitespaces
+"set list
+"set listchars=tab:->,trail:·,eol:¶,space:-
+
+
+"7. auto-alignment of code
+set autoindent
+set smartindent
+set cindent
+
+" 8. add number of line in file
+set number
+
+
+"9. easier to switch between files
+nnoremap <C-Right>   gt
+nnoremap <C-Left>  gT
+
+
+"10. add a header 42 for every new file created by vim 
+augroup header42
+    autocmd!
+    autocmd BufNewFile *.c,*.h,*.cpp,*.hpp,Makefile Stdheader
+augroup END
+
+
+autocmd BufRead *.c,*.h,*.cpp,*.hpp,Makefile call s:add_header_if_missing()
+augroup END
+
+function! s:add_header_if_missing()
+    " if file is empty - add a header
+    if line('$') == 1 && getline(1) ==# ''
+        Stdheader
+        return
+    endif
+
+    " if first line is not header -> add it
+    if getline(1) !~# '^\s*/\*\*'
+        Stdheader
+    endif
+endfunction
+
+
+"11. default login and email
+let g:user42 = 'yukravch'
+let g:mail42 = 'yukravch@42.fr'
+
+
+"12. find and replace a word in all files opened with [vim -p *]
+function! ProjectSubstitute()
+    let l:before = input('Find: ')
+    if empty(l:before)
+        echo "Cancelled"
+        return
+    endif
+
+    let l:after = input('Replace with: ')
+
+    let l:curbuf = bufnr('%')
+
+    let l:sub = '%s/' . escape(l:before, '/\') . '/' . escape(l:after, '/\') . '/ge'
+
+    execute 'silent! argdo if expand("%:e") !=# "o" && !&binary && &modifiable | ' . l:sub . ' | update | endif'
+
+    execute 'buffer ' . l:curbuf
+
+    echo "Done."
+endfunction
+
+command! ProjectSub call ProjectSubstitute()
+
+" shortcut
+nnoremap <Space>r :ProjectSub<CR>
+
+
+
+"13. unable mouse
+set mouse=
+set mousemodel=extend
+autocmd InsertEnter * set mouse=i
+autocmd InsertLeave * set mouse=
+
+
+
+"14. search for forbidden functions
+call plug#begin('~/.vim/plugged')
+
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+
+call plug#end()
+function! s:SearchForbidden(...) abort
+  let pattern = join(a:000, '|')
+
+  let cmd = 'grep -R --line-number --ignore-case -E ' . shellescape(pattern)
+
+  call fzf#vim#grep(
+        \ cmd,
+        \ 1,
+        \ fzf#vim#with_preview(),
+        \ 0)
+endfunction
+
+command! -nargs=+ SearchForbidden call s:SearchForbidden(<f-args>)
+function! s:SearchForbiddenPrompt() abort
+  let l:args = input('Forbidden funcs (space separated): ')
+  if empty(l:args)
+    return
+  endif
+  execute 'SearchForbidden' l:args
+endfunction
+
+nnoremap <Space>s :call <SID>SearchForbiddenPrompt()<CR>
+
