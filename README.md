@@ -1,4 +1,4 @@
-q1. No need to write :w to save the text
+1. No need to write :w to save the text  
 2. No need to press `a`/`s` button to start insert mode
 3. Autocomplete to get pairs for `()` etc; to `#include` etc
 4. Highlight all the file
