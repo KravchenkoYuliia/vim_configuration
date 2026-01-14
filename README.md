@@ -23,3 +23,7 @@
     		```
 		- put the scrip
 		- :PlugInstall
+
+	
+16. binds .tpp files to C++ filetype ( without it any file .tpp has no colors)
+

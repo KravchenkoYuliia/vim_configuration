@@ -133,3 +133,6 @@ endfunction
 
 nnoremap <Space>s :call <SID>SearchForbiddenPrompt()<CR>
 
+"15. binds .tpp files to C++ filetype ( without it any file .tpp has no colors)
+	autocmd BufRead,BufNewFile *.tpp set filetype=cpp
+
